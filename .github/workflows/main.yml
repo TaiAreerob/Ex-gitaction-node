@@ -14,8 +14,12 @@ jobs:
       run: echo "::set-output name=date::$(date +'%s')"
     - uses: docker-practice/actions-setup-docker@master
     - run: |
-        docker build -t ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME" ./frontend
+        #docker build -t joinsportth/ex-gitaction-node:"web-v01-00129931" ./frontend 
+        docker build -t ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME" ./frontend 
+        #docker push joinsportth/ex-gitaction-node:"web-v01-00129931"
         docker push ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME"
+        #docker login -u ursenameDockerhun -p passwordDockerhun
+        docker login -u ${{secrets.USERNAME_DOCKERHUB}} -p ${{secrets.PASSWORD_DOCKERHUB}}
       env: 
         TAG_NAME: "${{steps.date.outputs.date }}"
 
@@ -26,13 +30,14 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT_SSH }}
+        port: 22
         envs: TAG_NAME
         script: |
+          #docker container rm -f frontend
           sudo docker container rm -f ${{secrets.IMAGE_NAME}}
           sudo docker rmi $(sudo docker images | grep '${{secrets.REPO_PATH}}')
           sudo docker login -u ${{secrets.USERNAME_DOCKERHUB}} -p ${{secrets.PASSWORD_DOCKERHUB}}
           sudo docker pull ${{secrets.REPO_PATH}}:$TAG_NAME
-          sudo docker run -p ${{secrets.IP_BACK_DEV}}:${{secrets.PORT_DEPLOY_DEV}}:5551 -d --restart always --name ${{secrets.IMAGE_NAME}} ${{secrets.REPO_PATH}}:$TAG_NAME
+          sudo docker run -p 172.16.16.1:80:3000 -d --restart always --name ${{secrets.IMAGE_NAME}} ${{secrets.REPO_PATH}}:$TAG_NAME
       env: 
         TAG_NAME: "dev-${{ steps.date.outputs.date }}"
