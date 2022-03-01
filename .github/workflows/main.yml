@@ -1,0 +1,38 @@
+on:
+  push:
+    branches:
+    - main
+jobs:
+  buildImage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        ref: main
+    - name: Get current date
+      id: date
+      run: echo "::set-output name=date::$(date +'%s')"
+    - uses: docker-practice/actions-setup-docker@master
+    - run: |
+        docker build -t ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME" ./frontend
+        docker push ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME"
+      env: 
+        TAG_NAME: "${{steps.date.outputs.date }}"
+
+    - uses: appleboy/ssh-action@master
+      env: 
+        TAG_NAME: "${{ steps.date.outputs.date }}"
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT_SSH }}
+        envs: TAG_NAME
+        script: |
+          sudo docker container rm -f ${{secrets.IMAGE_NAME}}
+          sudo docker rmi $(sudo docker images | grep '${{secrets.REPO_PATH}}')
+          sudo docker login -u ${{secrets.USERNAME_DOCKERHUB}} -p ${{secrets.PASSWORD_DOCKERHUB}}
+          sudo docker pull ${{secrets.REPO_PATH}}:$TAG_NAME
+          sudo docker run -p ${{secrets.IP_BACK_DEV}}:${{secrets.PORT_DEPLOY_DEV}}:5551 -d --restart always --name ${{secrets.IMAGE_NAME}} ${{secrets.REPO_PATH}}:$TAG_NAME
+      env: 
+        TAG_NAME: "dev-${{ steps.date.outputs.date }}"
