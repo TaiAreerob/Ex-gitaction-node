@@ -24,8 +24,6 @@ jobs:
         TAG_NAME: "${{steps.date.outputs.date }}"
 
     - uses: appleboy/ssh-action@master
-      env: 
-        TAG_NAME: "${{ steps.date.outputs.date }}"
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
@@ -40,4 +38,4 @@ jobs:
           sudo docker pull ${{secrets.REPO_PATH}}:$TAG_NAME
           sudo docker run -p 172.16.16.1:80:3000 -d --restart always --name ${{secrets.IMAGE_NAME}} ${{secrets.REPO_PATH}}:$TAG_NAME
       env: 
-        TAG_NAME: "dev-${{ steps.date.outputs.date }}"
+          TAG_NAME: "web-v01-${{ steps.date.outputs.date }}"
