@@ -15,11 +15,13 @@ jobs:
     - uses: docker-practice/actions-setup-docker@master
     - run: |
         #docker build -t joinsportth/ex-gitaction-node:"web-v01-00129931" ./frontend 
-        docker build -t ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME" ./frontend 
-        #docker push joinsportth/ex-gitaction-node:"web-v01-00129931"
-        docker push ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME"
+        docker build -t ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME" ./frontend
         #docker login -u ursenameDockerhun -p passwordDockerhun
         docker login -u ${{secrets.USERNAME_DOCKERHUB}} -p ${{secrets.PASSWORD_DOCKERHUB}}
+        #docker push joinsportth/ex-gitaction-node:"web-v01-00129931"
+        docker push ${{secrets.REPO_PATH}}:"web-v01-$TAG_NAME"
+        
+       
       env: 
         TAG_NAME: "${{steps.date.outputs.date }}"
 
